@@ -21,6 +21,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service
+            android:name="com.example.eva.stalker.StalkerService"
+            android:enabled="true">
+        </service>
+        <receiver android:name="com.example.eva.stalker.StalkerKilledReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:label="RestartStalkerWhenKilled">
+            <intent-filter>
+                <action android:name="com.example.stalker.RestartStalker"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
