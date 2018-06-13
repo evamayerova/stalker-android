@@ -30,6 +30,13 @@ public class StalkerService extends Service {
     private String fileName;
 
     public StalkerService(Context appContext) {
+        super();
+        deviceName = getDeviceName();
+        folderName = Environment.getExternalStorageDirectory() + File.separator + "stalkerLog";
+        fileName = getFileName();
+    }
+
+    public StalkerService() {
         deviceName = getDeviceName();
         folderName = Environment.getExternalStorageDirectory() + File.separator + "stalkerLog";
         fileName = getFileName();
@@ -37,9 +44,15 @@ public class StalkerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d("dbg", "onStartCommand");
         try {
-            FileOutputStream fOut = openFileOutput(fileName, MODE_APPEND);
+            if (!isExternalStorageWritable()) {
+                Log.d("err", "external storage is not writable");
+                return START_STICKY;
+            }
+            File path = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "");
+            path.mkdirs();
+            File file = new File(path, fileName);
+            FileOutputStream fOut = new FileOutputStream(file, true);
             OutputStreamWriter outWriter = new OutputStreamWriter(fOut);
             while (true) {
                 try {
@@ -52,7 +65,9 @@ public class StalkerService extends Service {
                 }
             }
         } catch (java.io.FileNotFoundException e) {
+            Log.d("err", e.toString());
         } catch (java.io.IOException e) {
+            Log.d("err", e.toString());
         }
 
         return START_STICKY;
@@ -108,9 +123,18 @@ public class StalkerService extends Service {
     }
 
     public String getFileName() {
-        Calendar now = Calendar.getInstance();
+//        Calendar now = Calendar.getInstance();
         DateFormat df = new SimpleDateFormat("yy-MM-dd");
         String date = df.format(Calendar.getInstance().getTime());
         return date + "." + deviceName + ".log";
     }
+
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            return true;
+        }
+        return false;
+    }
+
 }

@@ -1,9 +1,14 @@
 package com.example.eva.stalker;
 
 
+import android.Manifest;
+import android.app.VoiceInteractor;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -29,14 +34,9 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         ctx = this;
-        Log.d("ahoj", "cau");
 
-        stalkerService = new StalkerService(getCtx());
-        serviceIntent = new Intent(getCtx(), stalkerService.getClass());
-        if (!isMyServiceRunning(stalkerService.getClass())) {
-            Log.d("dbg", serviceIntent.toString());
-            startService(serviceIntent);
-        }
+        if (checkPermissions())
+            runStalkerService();
     }
 
     @Override
@@ -71,5 +71,27 @@ public class MainActivity extends AppCompatActivity {
         }
         Log.i ("isMyServiceRunning?", false+"");
         return false;
+    }
+
+    public boolean checkPermissions() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+            return false;
+        }
+        return true;
+
+    }
+
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        runStalkerService();
+    }
+
+    public void runStalkerService() {
+        stalkerService = new StalkerService(getCtx());
+        serviceIntent = new Intent(getCtx(), stalkerService.getClass());
+        if (!isMyServiceRunning(stalkerService.getClass())) {
+            Log.d("dbg", serviceIntent.toString());
+            startService(serviceIntent);
+        }
     }
 }
